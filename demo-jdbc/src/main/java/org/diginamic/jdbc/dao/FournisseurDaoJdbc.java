@@ -1,4 +1,4 @@
-package org.diginamic.fr.dao;
+package org.diginamic.jdbc.dao;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -9,18 +9,9 @@ import java.util.List;
 import org.diginamic.fr.TestConnexionJdbc;
 import org.diginamic.fr.models.Fournisseur;
 
-/**
- * Cette classe va me permettre de lire en JDBC la table Fournisseur, d'avoir les méthodes CRUD
- * et d'obtenir des objets de type Fournisseur
- * @author Xeonadow
- *
- */
-public class FournisseurDao {
-	/**
-	 * Retourne la lsite des Fournisseurs de ma base de donnée
-	 * @return
-	 */
-	public static List<Fournisseur> getAll() {
+public class FournisseurDaoJdbc implements FournisseurDao {
+
+	public List<Fournisseur> extraire() {
 		Connection connection = null;
 		List<Fournisseur> listeDesFournisseurs = new ArrayList<Fournisseur>();
 		try {
@@ -49,16 +40,35 @@ public class FournisseurDao {
 		return listeDesFournisseurs;
 	}
 	
-	public static Integer count() {
+	public void insert(Fournisseur fournisseur) {
 		Connection connection = null;
-		Integer count = null;
 		try {
 			connection = TestConnexionJdbc.getConnection();
 			Statement state = connection.createStatement();
-			ResultSet resultSet = state.executeQuery("SELECT COUNT(*) AS count FROM FOURNISSEUR");
-			resultSet.next();
-			count = resultSet.getInt("count");
-			resultSet.close();
+			state.executeUpdate("INSERT INTO FOURNISSEUR VALUES ('" + fournisseur.getId() + "', '" + fournisseur.getNom() + "')");
+			state.close();
+		}
+		catch(Exception ex) {
+			System.err.println(ex.getMessage());
+		}
+		finally {
+			try {
+				if(connection != null)
+					connection.close();
+			}
+			catch(Exception ex) {
+				System.err.println(ex.getMessage());
+			}
+		}
+	}
+	
+	public int update(String ancienNom, String nouveauNom) {
+		Connection connection = null;
+		int count = -1;
+		try {
+			connection = TestConnexionJdbc.getConnection();
+			Statement state = connection.createStatement();
+			count = state.executeUpdate("UPDATE FOURNISSEUR SET NOM = '" + nouveauNom  + "' WHERE NOM = '" + ancienNom + "'");
 			state.close();
 		}
 		catch(Exception ex) {
@@ -76,16 +86,13 @@ public class FournisseurDao {
 		return count;
 	}
 	
-	public static Integer maxId() {
+	public boolean delete(Fournisseur fournisseur) {
 		Connection connection = null;
-		Integer max = null;
+		boolean deleted = false;
 		try {
 			connection = TestConnexionJdbc.getConnection();
 			Statement state = connection.createStatement();
-			ResultSet resultSet = state.executeQuery("SELECT MAX (ID) AS id FROM FOURNISSEUR");
-			resultSet.next();
-			max = resultSet.getInt("id");
-			resultSet.close();
+			deleted = state.executeUpdate("DELETE FROM FOURNISSEUR WHERE ID = " + fournisseur.getId()) <= 0 ? false : true;
 			state.close();
 		}
 		catch(Exception ex) {
@@ -100,73 +107,6 @@ public class FournisseurDao {
 				System.err.println(ex.getMessage());
 			}
 		}
-		return max;
-	}
-	
-	public static void insert(String nom) {
-		Connection connection = null;
-		Integer maxId = FournisseurDao.maxId();
-		try {
-			connection = TestConnexionJdbc.getConnection();
-			Statement state = connection.createStatement();
-			state.executeUpdate("INSERT INTO FOURNISSEUR VALUES ('" + (maxId + 1) + "', '" + nom  + "')");
-			state.close();
-		}
-		catch(Exception ex) {
-			System.err.println(ex.getMessage());
-		}
-		finally {
-			try {
-				if(connection != null)
-					connection.close();
-			}
-			catch(Exception ex) {
-				System.err.println(ex.getMessage());
-			}
-		}
-	}
-	
-	public static void update(Integer id, String nouveauNom) {
-		Connection connection = null;
-		try {
-			connection = TestConnexionJdbc.getConnection();
-			Statement state = connection.createStatement();
-			state.executeUpdate("UPDATE FOURNISSEUR SET NOM = '" + nouveauNom  + "' WHERE ID = " + id);
-			state.close();
-		}
-		catch(Exception ex) {
-			System.err.println(ex.getMessage());
-		}
-		finally {
-			try {
-				if(connection != null)
-					connection.close();
-			}
-			catch(Exception ex) {
-				System.err.println(ex.getMessage());
-			}
-		}
-	}
-	
-	public static void delete(Integer id) {
-		Connection connection = null;
-		try {
-			connection = TestConnexionJdbc.getConnection();
-			Statement state = connection.createStatement();
-			state.executeUpdate("DELETE FROM FOURNISSEUR WHERE ID = " + id);
-			state.close();
-		}
-		catch(Exception ex) {
-			System.err.println(ex.getMessage());
-		}
-		finally {
-			try {
-				if(connection != null)
-					connection.close();
-			}
-			catch(Exception ex) {
-				System.err.println(ex.getMessage());
-			}
-		}
+		return deleted;
 	}
 }

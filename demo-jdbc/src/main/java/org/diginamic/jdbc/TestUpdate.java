@@ -1,11 +1,12 @@
 package org.diginamic.jdbc;
 
-import org.diginamic.fr.dao.FournisseurDao;
+import org.diginamic.jdbc.dao.FournisseurDaoJdbc;
 
 public class TestUpdate {
 
 	public static void main(String[] args) {
-		FournisseurDao.update(4, "La Maison des Peintures");
+		FournisseurDaoJdbc dao = new FournisseurDaoJdbc();
+		dao.update("La Maison de la Peinture", "La Maison des Peintures");
 	}
 
 }
